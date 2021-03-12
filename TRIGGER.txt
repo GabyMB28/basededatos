@@ -1,0 +1,33 @@
+Un trigger que no permita ingresar una cita donde se incluya a un usuario con 4 o mas calificaciones menores a 2 en citas anteriores.
+
+create or replace function tg_cita() returns trigger
+as
+$tg_cita$
+    declare
+	malas_calificaciones_usuario1 int;
+	malas_calificaciones_usuario2 int;
+begin
+		select count(*) into malas_calificaciones_usuario1 from puntaje_usuario
+		where puntaje_usuario.usuario_id = NEW.usuario_id and puntaje_usuario.puntaje_valor<2;
+		
+		select count(*) into malas_calificaciones_usuario2 from puntaje_usuario
+		where puntaje_usuario.usuario_id = NEW.usuario2_id and puntaje_usuario.puntaje_valor<2;
+
+        if(malas_calificaciones_usuario1>=4) then
+		raise exception 'No se puede agendar una cita para el usuario % porque posee 4 o mas calificaciones negativas en citas anteriores', NEW.usuario_id;
+		end if;
+		if(malas_calificaciones_usuario2>=4) then
+		raise exception 'No se puede agendar una cita para el usuario % porque posee 4 o mas calificaciones negativas en citas anteriores', NEW.usuario2_id;
+		end if;
+        return new;
+end;
+$tg_cita$
+language plpgsql;
+
+create trigger tg_cita before insert OR UPDATE
+on cita for each row
+execute procedure tg_cita();
+
+insert into CITA values (11,1,7,'2020-02-14', '18:00:00');
+
+insert into CITA values (11,2,8,'2020-02-14', '18:00:00');

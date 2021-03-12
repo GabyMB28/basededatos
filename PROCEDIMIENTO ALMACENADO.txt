@@ -1,0 +1,27 @@
+Un procedimiento almacenado que reciba como parametro el id de una cita y devuelva quienes son los usuarios involucrados y los demas datos de la cita.
+
+
+create or replace function obtener_cita( citaid integer)
+RETURNS TABLE (cita integer,
+	usuario_nombre char,
+	usuario_apellido char,
+	usuario_nombre2 char,
+	usuario_apellido2 char,	
+	fecha_cita date,
+	hora_cita time )
+as $BODY$
+begin
+	RETURN QUERY
+	select cita.cita_id,usuario.usuario_nombre,usuario.usuario_apellido, u2.usuario_nombre as usuario_nombre2, u2.usuario_apellido as usuario_apellido2, cita.cita_fecha, cita.cita_hora from cita
+	inner join usuario on usuario.usuario_id = cita.usuario_id
+	inner join usuario u2 on u2.usuario_id = cita.usuario2_id
+	where cita.cita_id = citaid;
+	end
+$BODY$ language plpgsql;
+
+
+select * from obtener_cita(1);
+
+select * from obtener_cita(2);
+
+select * from obtener_cita(3);

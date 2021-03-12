@@ -1,0 +1,16 @@
+
+Un cursor que muestre el numero de citas finalizadas por usuario.
+
+do $$
+declare
+	datos Record;
+	cur_nro_citas Cursor for select usuario.usuario_nombre,usuario.usuario_apellido,count(puntaje_usuario.usuario_id) as numero_citas from puntaje_usuario
+	inner join usuario on usuario.usuario_id = puntaje_usuario.usuario_id
+	group by (usuario.usuario_nombre,usuario.usuario_apellido,usuario.usuario_id)
+	order by (usuario.usuario_id);
+	begin
+	for datos in cur_nro_citas loop
+	Raise notice 'Nombres y Apellidos: % %, Citas: %',datos.usuario_nombre,datos.usuario_apellido,datos.numero_citas;
+	end loop;
+end $$
+language 'plpgsql';
